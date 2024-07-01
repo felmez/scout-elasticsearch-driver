@@ -13,6 +13,11 @@ use ScoutElastic\Facades\ElasticClient;
 use ScoutElastic\Indexers\IndexerInterface;
 use ScoutElastic\Payloads\TypePayload;
 use stdClass;
+use ScoutElastic\Factories\ModelFactoryInterface;
+use InvalidArgumentException;
+use Elastic\Adapter\Indices\Index;
+use Elastic\Adapter\Indices\IndexManager;
+use Elastic\Adapter\Search\SearchResult;
 
 class ElasticEngine extends Engine
 {
@@ -22,6 +27,9 @@ class ElasticEngine extends Engine
      * @var \ScoutElastic\Indexers\IndexerInterface
      */
     protected $indexer;
+
+    protected ModelFactoryInterface $modelFactory;
+    protected IndexManager $indexManager;
 
     /**
      * Should the mapping be updated.
@@ -143,7 +151,7 @@ class ElasticEngine extends Engine
                 ->setIfNotNull('body.size', $builder->limit);
 
             foreach ($builder->wheres as $clause => $filters) {
-                $clauseKey = 'body.query.bool.filter.bool.'.$clause;
+                $clauseKey = 'body.query.bool.filter.bool.' . $clause;
 
                 $clauseValue = array_merge(
                     $payload->get($clauseKey, []),
@@ -361,5 +369,40 @@ class ElasticEngine extends Engine
         $query
             ->orderBy($model->getScoutKeyName())
             ->unsearchable();
+    }
+
+    /**
+     * @param SearchResult $results
+     * @param Model        $model
+     *
+     * @return LazyCollection
+     */
+    public function lazyMap(Builder $builder, $results, $model)
+    {
+        return $this->modelFactory->makeLazyFromSearchResult($results, $builder);
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return void
+     */
+    public function createIndex($name, array $options = [])
+    {
+        if (isset($options['primaryKey'])) {
+            throw new InvalidArgumentException('It is not possible to change the primary key name');
+        }
+
+        $this->indexManager->create(new Index($name));
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return void
+     */
+    public function deleteIndex($name)
+    {
+        $this->indexManager->drop($name);
     }
 }

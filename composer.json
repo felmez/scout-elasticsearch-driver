@@ -23,7 +23,8 @@
     "require": {
         "php": "^8.0",
         "elasticsearch/elasticsearch": "^8.14",
-        "laravel/scout": "^10.0"
+        "laravel/scout": "^10.0",
+        "babenkoivan/elastic-adapter": "^4.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.0",
