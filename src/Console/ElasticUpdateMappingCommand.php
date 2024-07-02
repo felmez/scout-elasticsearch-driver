@@ -54,7 +54,7 @@ class ElasticUpdateMappingCommand extends Command
         }
 
         ElasticClient::indices()
-            ->putMapping($payload->get());
+            ->putMapping($mapping);
 
         $this->info(sprintf(
             'The %s mapping was updated!',
