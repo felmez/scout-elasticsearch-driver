@@ -75,8 +75,8 @@ class ElasticMigrateModelCommand extends Command
             ->setIfNotEmpty('body.settings', $sourceIndexConfigurator->getSettings())
             ->get();
 
-        // ElasticClient::indices()
-            // ->create($payload);
+        ElasticClient::indices()
+            ->create($payload);
 
         $this->info(sprintf(
             'The %s index was created.',
